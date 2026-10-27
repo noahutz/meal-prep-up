@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F6B45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meal Prep">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F6B45'/%3E%3Cpath d='M16 30h32v6a14 14 0 0 1-14 14h-4a14 14 0 0 1-14-14z' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M24 22v-6M32 22v-8M40 22v-6' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font: 14px system-ui, sans-serif; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<title>Meal Prep Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one phone-width column, sticky header, scrolling screen, bottom tab bar (matches the approved mockup) */
+:root {
+  --bg: #F5F6F3; --surface: #FFFFFF; --fg: #1B1F1C; --muted: #555D57; --line: #E3E6E1; --chip: #EEF1EC;
+  --accent: #1F6B45; --accent-fg: #FFFFFF; --accent-soft: #E3EFE7; --accent-ink: #14492F;
+  --freeze-bg: #E7EEF7; --freeze-fg: #24476E; --warn: #8A3B12; --box: #9AA39C;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121513; --surface: #1C201D; --fg: #EDEFEC; --muted: #A9B1AB; --line: #2C322E; --chip: #262C28;
+  --accent: #5FBF8C; --accent-fg: #0D1F15; --accent-soft: #1F3328; --accent-ink: #A7E3C2;
+  --freeze-bg: #1E2A38; --freeze-fg: #A9C6E8; --warn: #F0A273; --box: #6E7871; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121513; --surface: #1C201D; --fg: #EDEFEC; --muted: #A9B1AB; --line: #2C322E; --chip: #262C28;
+  --accent: #5FBF8C; --accent-fg: #0D1F15; --accent-soft: #1F3328; --accent-ink: #A7E3C2;
+  --freeze-bg: #1E2A38; --freeze-fg: #A9C6E8; --warn: #F0A273; --box: #6E7871; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+button { font-family: inherit; font-size: inherit; color: inherit; }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.app { max-width: 560px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-block: 20px 14px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 2px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font-size: 26px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
+.sub { margin: 0; font-size: 14px; color: var(--muted); }
+main { flex: 1 1 auto; padding-block: 16px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 12px; }
+
+.card { background: var(--surface); border-radius: 14px; }
+.recipe { padding: 14px 14px 14px 16px; display: flex; align-items: center; gap: 12px; border: 1.5px solid transparent; }
+.recipe.on { border-color: var(--accent); }
+.grow { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.name { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.meta { font-size: 13px; color: var(--muted); }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 999px; background: var(--chip); color: var(--muted); }
+.tag.freeze { background: var(--freeze-bg); color: var(--freeze-fg); }
+.round { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 999px; border: 1.5px solid var(--accent); background: var(--surface); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.round.on { background: var(--accent); color: var(--accent-fg); }
+
+.hero { background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 18px 18px 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hero .big { font-size: 40px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.hero .big span { font-size: 18px; font-weight: 600; }
+.hero .lbl { font-size: 13px; font-weight: 500; }
+.stepper { display: flex; align-items: center; gap: 4px; background: var(--chip); border-radius: 999px; padding: 2px; flex: 0 0 auto; }
+.stepper button { width: 44px; height: 44px; border-radius: 999px; border: none; background: var(--surface); font-size: 22px; line-height: 1; cursor: pointer; }
+.stepper button:disabled { opacity: 0.4; cursor: default; }
+.stepper .n { min-width: 30px; text-align: center; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero .stepper { background: rgba(255,255,255,0.18); }
+.hero .stepper button { background: var(--accent-fg); color: var(--accent); }
+.hero .stepper .n { display: none; }
+.row { padding: 14px 14px 14px 16px; display: flex; align-items: center; gap: 12px; }
+.warn { color: var(--warn); }
+.cookday { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cookday label { font-weight: 600; }
+select { font: inherit; padding: 10px 12px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.note { margin: 2px 4px 0; font-size: 13px; color: var(--muted); }
+.empty { padding: 20px; color: var(--muted); }
+
+h2 { margin: 6px 4px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.list { overflow: hidden; }
+.item { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 6px; border-top: 1px solid var(--line); }
+.item:first-child { border-top: none; }
+.tick { flex: 0 0 auto; width: 44px; height: 44px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.box { width: 22px; height: 22px; box-sizing: border-box; border-radius: 6px; border: 2px solid var(--box); background: var(--surface); color: var(--accent-fg); display: flex; align-items: center; justify-content: center; }
+.item.done .box { background: var(--accent); border-color: var(--accent); }
+.item.done .grow, .item.done .qty { opacity: 0.55; }
+.item.done .iname { text-decoration: line-through; }
+.iname { font-size: 15px; font-weight: 500; }
+.used { font-size: 12px; color: var(--muted); }
+.qty { flex: 0 0 auto; text-align: right; display: flex; flex-direction: column; gap: 1px; max-width: 46%; }
+.buy { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.need { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pantry { padding: 14px 16px; color: var(--muted); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { min-height: 52px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-fg); font-size: 16px; font-weight: 600; cursor: pointer; padding: 0 18px; flex: 1 1 auto; }
+.btn.ghost { background: var(--surface); color: var(--accent); border: 1.5px solid var(--accent); }
+.toast { font-size: 13px; color: var(--accent-ink); background: var(--accent-soft); border-radius: 10px; padding: 8px 12px; }
+
+.step { padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.num { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.step-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.time { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.detail { font-size: 14px; color: var(--muted); }
+details { margin-top: 4px; }
+summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--accent); min-height: 32px; display: flex; align-items: center; }
+details ul, details ol { margin: 6px 0 0; padding-left: 20px; font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line);
+  padding-block: 6px calc(8px + env(safe-area-inset-bottom, 0px)); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+nav.tabs .inner { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.tabs button { min-height: 56px; border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); }
+nav.tabs button[aria-current="page"] { color: var(--accent); }
+.badge { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: no-preference) { .round, .box, .stepper button { transition: background-color .15s, border-color .15s; } }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="eyebrow" id="eyebrow">This week</div>
+    <h1 id="title">Pick this week’s meals</h1>
+    <p class="sub" id="sub"></p>
+  </header>
+  <main id="screen" aria-live="polite"></main>
+</div>
+<nav class="tabs" aria-label="Planner sections">
+  <div class="inner">
+    <button type="button" data-tab="recipes">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v15H5.5A1.5 1.5 0 0 0 4 20.5z"></path><path d="M4 20.5A1.5 1.5 0 0 1 5.5 19H19v2H5.5"></path><path d="M9 8h6M9 11.5h4"></path></svg>
+      Recipes
+    </button>
+    <button type="button" data-tab="plan">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8" width="17" height="11" rx="2"></rect><path d="M3.5 12h17"></path><path d="M8 8V5.5h8V8"></path></svg>
+      Servings
+    </button>
+    <button type="button" data-tab="groceries">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 10.5h10.6L20.5 7H6.6"></path><circle cx="9" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle></svg>
+      Groceries
+    </button>
+    <button type="button" data-tab="prep">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7.5"></circle><path d="M12 9v4l2.5 2"></path><path d="M10 3h4"></path></svg>
+      Prep day
+    </button>
+  </div>
+</nav>
+
+<script>
+// Ingredients: name, shop section and unit. Can sizes are shown on the list.
+const ING = {
+  chickenThigh: { name: 'Chicken thigh fillets', aisle: 'Meat & seafood', unit: 'g', pack: 1000, label: '1 kg pack' },
+  chickenBreast:{ name: 'Chicken breast fillets', aisle: 'Meat & seafood', unit: 'g', pack: 1000, label: '1 kg pack' },
+  beefMince:    { name: 'Beef mince', aisle: 'Meat & seafood', unit: 'g', pack: 500, label: '500 g pack' },
+  beefStrips:   { name: 'Beef stir-fry strips', aisle: 'Meat & seafood', unit: 'g', pack: 500, label: '500 g pack' },
+  porkMince:    { name: 'Pork mince', aisle: 'Meat & seafood', unit: 'g', pack: 500, label: '500 g pack' },
+  sausages:     { name: 'Beef sausages', aisle: 'Meat & seafood', unit: 'g', pack: 500, label: '500 g pack' },
+  broccoli:     { name: 'Broccoli', aisle: 'Fruit & veg', unit: 'each', loose: 'head' },
+  carrot:       { name: 'Carrots', aisle: 'Fruit & veg', unit: 'each', pack: 8, label: '1 kg bag', approx: 'about 8' },
+  onion:        { name: 'Brown onions', aisle: 'Fruit & veg', unit: 'each', pack: 6, label: '1 kg bag', approx: 'about 6' },
+  capsicum:     { name: 'Red capsicum', aisle: 'Fruit & veg', unit: 'each', loose: 'each' },
+  zucchini:     { name: 'Zucchini', aisle: 'Fruit & veg', unit: 'each', loose: 'each' },
+  sweetPotato:  { name: 'Sweet potato', aisle: 'Fruit & veg', unit: 'g', loose: 'kg' },
+  spinach:      { name: 'Baby spinach', aisle: 'Fruit & veg', unit: 'g', pack: 120, label: '120 g bag' },
+  eggs:         { name: 'Eggs', aisle: 'Dairy & eggs', unit: 'each', pack: 12, label: 'dozen' },
+  cream:        { name: 'Thickened cream', aisle: 'Dairy & eggs', unit: 'ml', pack: 300, label: '300 ml' },
+  cheese:       { name: 'Grated tasty cheese', aisle: 'Dairy & eggs', unit: 'g', pack: 250, label: '250 g bag' },
+  peasCorn:     { name: 'Frozen peas & corn', aisle: 'Freezer', unit: 'g', pack: 500, label: '500 g bag' },
+  corn:         { name: 'Frozen corn kernels', aisle: 'Freezer', unit: 'g', pack: 500, label: '500 g bag' },
+  rice:         { name: 'Jasmine rice', aisle: 'Pantry', unit: 'g', pack: 1000, label: '1 kg bag' },
+  spaghetti:    { name: 'Spaghetti', aisle: 'Pantry', unit: 'g', pack: 500, label: '500 g pack' },
+  penne:        { name: 'Penne', aisle: 'Pantry', unit: 'g', pack: 500, label: '500 g pack' },
+  passata:      { name: 'Tomato passata', aisle: 'Pantry', unit: 'ml', pack: 700, label: '700 ml jar' },
+  crushedTom:   { name: 'Crushed tomatoes', aisle: 'Pantry', unit: 'can', pack: 1, label: '400 g can' },
+  kidneyBeans:  { name: 'Red kidney beans', aisle: 'Pantry', unit: 'can', pack: 1, label: '400 g can' },
+  blackBeans:   { name: 'Black beans', aisle: 'Pantry', unit: 'can', pack: 1, label: '400 g can' },
+  coconut:      { name: 'Coconut milk', aisle: 'Pantry', unit: 'can', pack: 1, label: '400 ml can' },
+  teriyaki:     { name: 'Teriyaki sauce', aisle: 'Pantry', unit: 'ml', pack: 250, label: '250 ml bottle' },
+  oyster:       { name: 'Oyster sauce', aisle: 'Pantry', unit: 'ml', pack: 250, label: '250 ml bottle' },
+  simmer:       { name: 'Butter chicken simmer sauce', aisle: 'Pantry', unit: 'g', pack: 485, label: '485 g jar' },
+  curryPaste:   { name: 'Mild curry paste', aisle: 'Pantry', unit: 'g', pack: 200, label: '200 g jar' },
+  lentils:      { name: 'Red lentils', aisle: 'Pantry', unit: 'g', pack: 500, label: '500 g bag' },
+  salsa:        { name: 'Mild salsa', aisle: 'Pantry', unit: 'g', pack: 300, label: '300 g jar' }
+};
+const AISLES = ['Meat & seafood', 'Fruit & veg', 'Dairy & eggs', 'Freezer', 'Pantry'];
+
+// Amounts are per serving (the shortlist doc lists them for 4 servings).
+const RECIPES = [
+  { id: 'teriyaki', name: 'Chicken teriyaki rice bowls', short: 'Teriyaki bowls', time: 35, keeps: 4, freezes: false, cook: 'oven',
+    per: { chickenThigh: 150, rice: 75, broccoli: 0.25, carrot: 0.5, teriyaki: 40 },
+    method: ['Bake the chicken at 200°C for 25 min, then slice.', 'Steam the broccoli and sliced carrot for 5 min while the rice cooks.', 'Toss the chicken in the sauce and pack over rice with the veg.'] },
+  { id: 'bolognese', name: 'Beef bolognese with spaghetti', short: 'Bolognese', time: 45, keeps: 4, freezes: true, cook: 'stove',
+    per: { beefMince: 125, spaghetti: 90, passata: 125, onion: 0.25, carrot: 0.25 },
+    method: ['Brown the mince with diced onion and grated carrot for 8 min.', 'Add the passata and simmer for 25 min.', 'Cook the pasta 1 min less than the packet says so it doesn’t go soft when reheated.'] },
+  { id: 'butter', name: 'Butter chicken with rice', short: 'Butter chicken', time: 35, keeps: 4, freezes: true, cook: 'stove',
+    per: { chickenThigh: 150, simmer: 121, cream: 30, onion: 0.25, rice: 75 },
+    method: ['Brown the diced chicken and onion for 6 min.', 'Add the sauce and cream and simmer for 15 min.', 'Pack with rice.'] },
+  { id: 'chilli', name: 'Beef and bean chilli with rice', short: 'Chilli', time: 40, keeps: 4, freezes: true, cook: 'stove',
+    per: { beefMince: 125, kidneyBeans: 0.25, crushedTom: 0.25, capsicum: 0.25, onion: 0.25, rice: 75 },
+    method: ['Brown the mince with diced onion and capsicum, plus 2 tsp each cumin and paprika (per 4 servings).', 'Add the tomatoes and drained beans and simmer for 20 min.', 'Pack with rice.'] },
+  { id: 'sausage', name: 'Sheet-pan sausages and roast veg', short: 'Sausages & veg', time: 40, keeps: 3, freezes: false, cook: 'oven',
+    per: { sausages: 150, sweetPotato: 150, capsicum: 0.5, onion: 0.25, broccoli: 0.25 },
+    method: ['Cut the veg into chunks and toss with oil on a tray with the sausages.', 'Roast at 210°C for 35 min, adding broccoli for the last 10 min.', 'Slice the sausages before packing.'] },
+  { id: 'burrito', name: 'Chicken burrito bowls', short: 'Burrito bowls', time: 30, keeps: 4, freezes: false, cook: 'stove',
+    per: { chickenBreast: 150, rice: 75, blackBeans: 0.25, corn: 62.5, salsa: 40 },
+    method: ['Season the chicken with cumin and paprika and pan-fry for 12 min, then slice.', 'Warm the drained beans and corn together.', 'Pack over rice, with salsa in a small tub on the side.'] },
+  { id: 'friedrice', name: 'Pork and egg fried rice', short: 'Fried rice', time: 25, keeps: 3, freezes: false, cook: 'stove', coldRice: true,
+    per: { porkMince: 100, rice: 80, peasCorn: 80, eggs: 1 },
+    method: ['Use rice that has cooled fully (cook it first, or the day before).', 'Fry the mince, push it aside and scramble the eggs.', 'Add the rice, peas and corn and 3 tbsp soy sauce (per 4 servings), and fry for 5 min.'] },
+  { id: 'dahl', name: 'Red lentil and spinach curry', short: 'Lentil curry', time: 30, keeps: 5, freezes: true, cook: 'stove',
+    per: { lentils: 70, coconut: 0.25, curryPaste: 25, onion: 0.25, spinach: 30, rice: 75 },
+    method: ['Fry the onion and curry paste for 3 min.', 'Add the rinsed lentils, coconut milk and 125 ml water per serving, and simmer for 20 min.', 'Stir in the spinach until wilted, then pack with rice.'] },
+  { id: 'beefbroc', name: 'Beef and broccoli stir-fry with rice', short: 'Beef & broccoli', time: 25, keeps: 3, freezes: false, cook: 'stove',
+    per: { beefStrips: 125, broccoli: 0.5, onion: 0.25, oyster: 30, rice: 75 },
+    method: ['Stir-fry the beef in batches on high heat, 3 min each, then set aside.', 'Stir-fry the broccoli and sliced onion for 4 min with a splash of water.', 'Return the beef, add the oyster sauce and 2 tbsp soy sauce (per 4 servings), and pack with rice.'] },
+  { id: 'pastabake', name: 'Chicken and veg pasta bake', short: 'Pasta bake', time: 50, keeps: 4, freezes: true, cook: 'oven',
+    per: { chickenBreast: 125, penne: 100, passata: 175, zucchini: 0.25, capsicum: 0.25, cheese: 37.5 },
+    method: ['Boil the penne for 3 min less than the packet says.', 'Brown the diced chicken, then add the diced veg and passata and simmer for 10 min.', 'Mix with the pasta, top with cheese, and bake at 200°C for 20 min.'] }
+];
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const PANTRY = 'Olive oil, garlic, soy sauce, salt and pepper, ground cumin, paprika';
+
+const KEY = 'meal-prep-planner-v1';
+const DEFAULT = { tab: 'recipes', picked: ['teriyaki', 'bolognese', 'butter', 'dahl'], servings: { teriyaki: 5, bolognese: 5, butter: 5, dahl: 5 }, checked: {}, cookDay: 0 };
+let S = load();
+let toast = '';
+
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) return Object.assign({}, DEFAULT, JSON.parse(raw)); } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function set(patch) { Object.assign(S, patch); save(); render(); }
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const chosen = () => RECIPES.filter(r => S.picked.includes(r.id));
+const servingsOf = r => S.servings[r.id] || 4;
+const total = () => chosen().reduce((a, r) => a + servingsOf(r), 0);
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : (many || one + 's'));
+
+function weight(v, unit) {
+  if (unit === 'g' || unit === 'ml') {
+    if (v >= 1000) return (Math.round(v / 100) / 10) + (unit === 'g' ? ' kg' : ' L');
+    return Math.ceil(v / 10) * 10 + ' ' + unit;
+  }
+  return null;
+}
+function nice(x) { const r = Math.round(x * 4) / 4; return Number.isInteger(r) ? String(r) : r.toFixed(2).replace(/0$/, ''); }
+
+// Amount of one ingredient for a recipe at n servings, written for the cook.
+function amountText(k, v) {
+  const g = ING[k];
+  if (g.unit === 'g' || g.unit === 'ml') return weight(v, g.unit);
+  if (g.unit === 'can') return nice(v) + ' ' + (v > 1 ? 'cans' : 'can') + ' (' + g.label.replace(/ can$/, '') + ')';
+  if (k === 'eggs') return plural(Math.ceil(v), 'egg');
+  const word = { broccoli: 'head', capsicum: 'capsicum', zucchini: 'zucchini', carrot: 'carrot', onion: 'onion' }[k] || '';
+  return nice(v) + ' ' + word + (v > 1 && word !== 'zucchini' ? 's' : '');
+}
+
+function groceries() {
+  const need = {}, used = {};
+  chosen().forEach(r => {
+    const n = servingsOf(r);
+    Object.entries(r.per).forEach(([k, v]) => { need[k] = (need[k] || 0) + v * n; (used[k] = used[k] || []).push(r.short); });
+  });
+  return AISLES.map(aisle => ({
+    aisle,
+    items: Object.keys(need).filter(k => ING[k].aisle === aisle).map(k => {
+      const g = ING[k], v = need[k];
+      const buy = amountText(k, g.unit === 'each' || g.unit === 'can' ? Math.ceil(v - 1e-9) : v), needTxt = '';
+      return { k, name: g.name, buy, need: needTxt, used: used[k].join(', ') };
+    })
+  })).filter(a => a.items.length);
+}
+
+function eatBy(r) { return DAYS[(S.cookDay + r.keeps) % 7]; }
+
+const ICON_CHECK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+const ICON_PLUS = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>';
+const ICON_TICK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+
+function screenRecipes() {
+  const cards = RECIPES.map(r => {
+    const on = S.picked.includes(r.id);
+    return `<div class="card recipe${on ? ' on' : ''}">
+      <div class="grow">
+        <div class="name">${esc(r.name)}</div>
+        <div class="meta">${r.time} min · ${Object.keys(r.per).length} ingredients · ${r.cook === 'oven' ? 'oven' : 'stovetop'}</div>
+        <div class="tags"><span class="tag">Keeps ${r.keeps} days</span>${r.freezes ? '<span class="tag freeze">Freezes well</span>' : ''}</div>
+      </div>
+      <button type="button" class="round${on ? ' on' : ''}" data-act="toggle" data-id="${r.id}" aria-pressed="${on}" aria-label="${on ? 'Remove' : 'Add'} ${esc(r.name)}">${on ? ICON_CHECK : ICON_PLUS}</button>
+    </div>`;
+  }).join('');
+  const n = chosen().length;
+  return cards + (n ? `<button type="button" class="btn" data-go="plan">Set servings for ${plural(n, 'meal')}</button>` : '');
+}
+
+function screenPlan() {
+  const list = chosen();
+  const t = total();
+  let html = `<div class="hero">
+    <div><div class="lbl">Total this week</div><div class="big">${t} <span>servings</span></div><div class="lbl">${plural(t, 'container')} · ${plural(list.length, 'recipe')}</div></div>
+    <div class="stepper" role="group" aria-label="Total servings">
+      <button type="button" data-act="total" data-d="-1" aria-label="One fewer serving in total" ${t <= list.length ? 'disabled' : ''}>−</button>
+      <span class="n">${t}</span>
+      <button type="button" data-act="total" data-d="1" aria-label="One more serving in total" ${!list.length ? 'disabled' : ''}>+</button>
+    </div>
+  </div>
+  <div class="card cookday"><label for="cookday">Cooking day</label>
+    <select id="cookday" data-act="cookday">${DAYS.map((d, i) => `<option value="${i}"${i === S.cookDay ? ' selected' : ''}>${d}</option>`).join('')}</select></div>`;
+  if (!list.length) return html + '<div class="card empty">No recipes picked yet. Go to Recipes and add a few.</div>';
+  html += list.map(r => {
+    const n = servingsOf(r);
+    const risky = !r.freezes && n > r.keeps + 1;
+    const note = r.freezes
+      ? `Eat by ${eatBy(r)}, or freeze some`
+      : `Eat by ${eatBy(r)}` + (risky ? ' · that’s a lot to eat in ' + r.keeps + ' days' : '');
+    return `<div class="card row">
+      <div class="grow"><div class="name" style="font-size:15px">${esc(r.name)}</div><div class="meta${risky ? ' warn' : ''}">${note}</div></div>
+      <div class="stepper" role="group" aria-label="Servings of ${esc(r.name)}">
+        <button type="button" data-act="serv" data-id="${r.id}" data-d="-1" aria-label="One fewer serving of ${esc(r.name)}" ${n <= 1 ? 'disabled' : ''}>−</button>
+        <span class="n">${n}</span>
+        <button type="button" data-act="serv" data-id="${r.id}" data-d="1" aria-label="One more serving of ${esc(r.name)}" ${n >= 30 ? 'disabled' : ''}>+</button>
+      </div>
+    </div>`;
+  }).join('');
+  return html + `<p class="note">The +/− on the green card spreads servings across your meals. The grocery list updates as you go.</p>
+    <button type="button" class="btn" data-go="groceries">See grocery list</button>`;
+}
+
+function screenGroceries() {
+  const aisles = groceries();
+  if (!aisles.length) return '<div class="card empty">Pick some recipes first and your grocery list will appear here.</div>';
+  let html = aisles.map(a => `<h2>${esc(a.aisle)}</h2><div class="card list">${a.items.map(it => {
+    const on = !!S.checked[it.k];
+    return `<div class="item${on ? ' done' : ''}">
+      <button type="button" class="tick" data-act="check" data-k="${it.k}" aria-pressed="${on}" aria-label="${on ? 'Untick' : 'Tick'} ${esc(it.name)}"><span class="box">${on ? ICON_TICK : ''}</span></button>
+      <div class="grow" style="gap:1px"><div class="iname">${esc(it.name)}</div><div class="used">${esc(it.used)}</div></div>
+      <div class="qty"><div class="buy">${esc(it.buy)}</div>${it.need ? `<div class="need">${esc(it.need)}</div>` : ''}</div>
+    </div>`;
+  }).join('')}</div>`).join('');
+  html += `<h2>Check the pantry</h2><div class="card pantry">${PANTRY}</div>`;
+  html += `${toast ? `<div class="toast" role="status">${esc(toast)}</div>` : ''}
+    <div class="actions">${navigator.share ? '<button type="button" class="btn ghost" data-act="share">Share list</button>' : ''}<button type="button" class="btn ghost" data-act="copy">Copy list</button><button type="button" class="btn ghost" data-act="clear">Untick all</button></div>
+    <button type="button" class="btn" data-go="prep">Plan prep day</button>`;
+  return html;
+}
+
+function screenPrep() {
+  const list = chosen();
+  if (!list.length) return '<div class="card empty">Pick some recipes first and your cooking order will appear here.</div>';
+  const steps = [];
+  const rice = list.reduce((a, r) => a + (r.per.rice || 0) * servingsOf(r), 0);
+  const rices = list.filter(r => r.per.rice).map(r => r.short);
+  if (rice) steps.push({ title: 'Get the rice on first', time: '30 min',
+    detail: `Cook ${weight(rice, 'g')} of jasmine rice (about ${Math.ceil(rice / 185)} cups dry) for ${rices.join(', ')}. Spread it on trays so it cools quickly.` });
+  const oven = list.filter(r => r.cook === 'oven');
+  const stove = list.filter(r => r.cook !== 'oven').sort((a, b) => (a.coldRice ? 1 : 0) - (b.coldRice ? 1 : 0));
+  if (oven.length) steps.push({ title: 'Heat the oven', time: '10 min', detail: `Set it to 200 to 210°C for ${oven.map(r => r.short).join(' and ')}. Oven dishes cook on their own while you work on the stovetop.` });
+  [...oven, ...stove].forEach(r => {
+    const n = servingsOf(r);
+    steps.push({ title: r.name, time: r.time + ' min', recipe: r, n });
+  });
+  steps.push({ title: 'Cool, then portion', time: '20 min', detail: `Let everything cool for no more than an hour, then split into ${plural(total(), 'single-meal container')}.` });
+  const freezers = list.filter(r => r.freezes).map(r => r.short);
+  steps.push({ title: 'Label and store', time: '5 min', detail: `Write the meal and eat-by day on each lid.` + (freezers.length ? ` Freeze any ${freezers.join(', ')} you won’t eat in time.` : '') });
+
+  return `<p class="note" style="margin-top:0">Cooking on ${DAYS[S.cookDay]} · ${plural(total(), 'serving')}</p>` + steps.map((s, i) => `<div class="card step">
+    <div class="num">${i + 1}</div>
+    <div class="grow">
+      <div class="step-head"><div class="name" style="font-size:15px">${esc(s.title)}</div><div class="time">${s.time}</div></div>
+      ${s.detail ? `<div class="detail">${esc(s.detail)}</div>` : ''}
+      ${s.recipe ? `<div class="detail">${plural(s.n, 'serving')} · eat by ${eatBy(s.recipe)}</div>
+        <details><summary>Ingredients and method</summary>
+          <ul>${Object.entries(s.recipe.per).map(([k, v]) => `<li>${esc(amountText(k, v * s.n))} ${esc(ING[k].name.toLowerCase())}</li>`).join('')}</ul>
+          <ol>${s.recipe.method.map(m => `<li>${esc(m)}</li>`).join('')}</ol>
+        </details>` : ''}
+    </div>
+  </div>`).join('');
+}
+
+const HEAD = {
+  recipes: () => ['Pick this week’s meals', `${plural(chosen().length, 'recipe')} picked · easy, fridge-friendly meals`],
+  plan: () => ['Servings this week', 'One serving fills one container'],
+  groceries: () => { const n = groceries().reduce((a, x) => a + x.items.length, 0); const d = Object.values(S.checked).filter(Boolean).length; return ['Grocery list', `${plural(n, 'item')} · amounts for your servings` + (d ? ` · ${d} ticked` : '')]; },
+  prep: () => ['Prep day', 'Cooking order, start to finish']
+};
+
+function render() {
+  const [t, s] = HEAD[S.tab]();
+  document.getElementById('title').textContent = t;
+  document.getElementById('sub').textContent = s;
+  document.getElementById('eyebrow').textContent = 'Weekly meal prep';
+  const el = document.getElementById('screen');
+  el.innerHTML = { recipes: screenRecipes, plan: screenPlan, groceries: screenGroceries, prep: screenPrep }[S.tab]();
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === S.tab ? 'page' : 'false'));
+}
+
+function go(tab) { toast = ''; set({ tab }); window.scrollTo(0, 0); }
+
+function copyText() {
+  const lines = ['Grocery list (' + plural(total(), 'serving') + ')'];
+  groceries().forEach(a => { lines.push('', a.aisle.toUpperCase()); a.items.forEach(it => lines.push((S.checked[it.k] ? '☑ ' : '☐ ') + it.name + ': ' + it.buy)); });
+  lines.push('', 'CHECK THE PANTRY');
+  PANTRY.split(', ').forEach(x => lines.push('☐ ' + x.charAt(0).toUpperCase() + x.slice(1)));
+  return lines.join('\n');
+}
+
+document.addEventListener('click', e => {
+  const tabBtn = e.target.closest('[data-tab]'); if (tabBtn) return go(tabBtn.dataset.tab);
+  const goBtn = e.target.closest('[data-go]'); if (goBtn) return go(goBtn.dataset.go);
+  const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT') return;
+  const act = b.dataset.act;
+  if (act === 'toggle') {
+    const id = b.dataset.id; const picked = S.picked.includes(id) ? S.picked.filter(x => x !== id) : [...S.picked, id];
+    const servings = Object.assign({}, S.servings); if (!servings[id]) servings[id] = 4;
+    set({ picked, servings });
+  } else if (act === 'serv') {
+    const servings = Object.assign({}, S.servings); const id = b.dataset.id;
+    servings[id] = Math.max(1, Math.min(30, (servings[id] || 4) + Number(b.dataset.d))); set({ servings });
+  } else if (act === 'total') {
+    const list = chosen(); if (!list.length) return;
+    const servings = Object.assign({}, S.servings); const d = Number(b.dataset.d);
+    const sorted = [...list].sort((a, c) => d > 0 ? servingsOf(a) - servingsOf(c) : servingsOf(c) - servingsOf(a));
+    const r = sorted[0]; const n = servingsOf(r) + d; if (n < 1 || n > 30) return;
+    servings[r.id] = n; set({ servings });
+  } else if (act === 'check') {
+    const checked = Object.assign({}, S.checked); checked[b.dataset.k] = !checked[b.dataset.k]; set({ checked });
+  } else if (act === 'clear') { toast = ''; set({ checked: {} }); }
+  else if (act === 'share') {
+    navigator.share({ title: 'Grocery list', text: copyText() }).catch(() => {});
+  }
+  else if (act === 'copy') {
+    const text = copyText();
+    const done = ok => { toast = ok ? 'Copied with tick boxes. Paste it into a note or message.' : 'Copy didn’t work here. Long-press the list to select it instead.'; render(); };
+    try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch (err) { done(false); }
+  }
+});
+document.addEventListener('change', e => { if (e.target.id === 'cookday') set({ cookDay: Number(e.target.value) }); });
+
+render();
+</script>
+</body>
+</html>
